@@ -1,7 +1,9 @@
-#include <ctype.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
+
+typedef unsigned char uint8_t;
+
+#define INT64_MAX 9223372036854775807LL
+#define INT64_MIN (-INT64_MAX - 1)
 
 enum : uint8_t {
     STR_TO_INT_OK = 0,
@@ -9,16 +11,30 @@ enum : uint8_t {
     STR_TO_INT_OVERFLOW = 2,
 };
 
+uint8_t str_is_digit(uint8_t c) { return c >= '0' && c <= '9'; }
+
+uint8_t str_is_space(uint8_t c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f';
+}
+
+size_t str_len(char *s) {
+    size_t len = 0;
+    while (s[len]) {
+        len++;
+    }
+    return len;
+}
+
 char *str_ltrim(char *s) {
-    while (isspace((unsigned char)*s)) {
+    while (str_is_space(*s)) {
         s++;
     }
     return s;
 }
 
 char *str_rtrim(char *s) {
-    size_t len = strlen(s);
-    while (len > 0 && isspace((unsigned char)s[len - 1])) {
+    size_t len = str_len(s);
+    while (len > 0 && str_is_space(s[len - 1])) {
         len--;
     }
     s[len] = '\0';
@@ -42,7 +58,7 @@ int64_t str_to_int(char *str, uint8_t *err) {
                 sign = -1;
             }
             seen_sign = 1;
-        } else if (!isdigit((uint8_t)*curr)) {
+        } else if (!str_is_digit(*curr)) {
             *err = STR_TO_INT_ERR;
             return 0;
         } else {

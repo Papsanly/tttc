@@ -1,5 +1,4 @@
 #include "str.c"
-#include <stdint.h>
 #include <stdio.h>
 
 enum : uint8_t { CELL_EMPTY = 0, CELL_X = 1, CELL_O = 2 };
