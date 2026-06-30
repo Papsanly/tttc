@@ -1,24 +1,20 @@
+#include <limits.h>
 #include <stdio.h>
 
-typedef unsigned char uint8_t;
-
-#define INT64_MAX 9223372036854775807LL
-#define INT64_MIN (-INT64_MAX - 1)
-
-enum : uint8_t {
+enum {
     STR_TO_INT_OK = 0,
     STR_TO_INT_ERR = 1,
     STR_TO_INT_OVERFLOW = 2,
 };
 
-uint8_t str_is_digit(uint8_t c) { return c >= '0' && c <= '9'; }
+int str_is_digit(char c) { return c >= '0' && c <= '9'; }
 
-uint8_t str_is_space(uint8_t c) {
+int str_is_space(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f';
 }
 
-size_t str_len(char *s) {
-    size_t len = 0;
+int str_len(char *s) {
+    int len = 0;
     while (s[len]) {
         len++;
     }
@@ -33,7 +29,7 @@ char *str_ltrim(char *s) {
 }
 
 char *str_rtrim(char *s) {
-    size_t len = str_len(s);
+    int len = str_len(s);
     while (len > 0 && str_is_space(s[len - 1])) {
         len--;
     }
@@ -43,12 +39,12 @@ char *str_rtrim(char *s) {
 
 char *str_trim(char *s) { return str_rtrim(str_ltrim(s)); }
 
-int64_t str_to_int(char *str, uint8_t *err) {
-    int64_t res = 0;
+int str_to_int(char *str, int *err) {
+    int res = 0;
     char *curr = str;
-    int64_t sign = 1;
-    int64_t seen_sign = 0;
-    int64_t seen_digit = 0;
+    int sign = 1;
+    int seen_sign = 0;
+    int seen_digit = 0;
     while (*curr) {
         if (*curr == '-' || *curr == '+') {
             if (seen_sign || seen_digit) {
@@ -62,16 +58,16 @@ int64_t str_to_int(char *str, uint8_t *err) {
             *err = STR_TO_INT_ERR;
             return 0;
         } else {
-            int64_t digit = *curr - '0';
+            int digit = *curr - '0';
             seen_digit = 1;
             if (sign > 0) {
-                if (res > (INT64_MAX - digit) / 10) {
+                if (res > (INT_MAX - digit) / 10) {
                     *err = STR_TO_INT_OVERFLOW;
                     return 0;
                 }
                 res = res * 10 + digit;
             } else {
-                if (res < (INT64_MIN + digit) / 10) {
+                if (res < (INT_MIN + digit) / 10) {
                     *err = STR_TO_INT_OVERFLOW;
                     return 0;
                 }
@@ -88,15 +84,15 @@ int64_t str_to_int(char *str, uint8_t *err) {
     return res;
 }
 
-void str_to_int_test_case(char *input, int64_t expected_res, uint8_t expected_err, int64_t *failed,
-                          int64_t *passing) {
-    uint8_t err = 0;
-    int64_t res = str_to_int(input, &err);
-    int64_t is_passing = res == expected_res && err == expected_err;
+void str_to_int_test_case(char *input, int expected_res, int expected_err, int *failed,
+                          int *passing) {
+    int err = 0;
+    int res = str_to_int(input, &err);
+    int is_passing = res == expected_res && err == expected_err;
     if (!is_passing) {
         printf("input: %s\n", input);
-        printf("result: %lld\n", res);
-        printf("expected result: %lld\n", expected_res);
+        printf("result: %d\n", res);
+        printf("expected result: %d\n", expected_res);
         printf("error: %d\n", err);
         printf("expected error: %d\n\n", expected_err);
     }
@@ -105,8 +101,8 @@ void str_to_int_test_case(char *input, int64_t expected_res, uint8_t expected_er
 }
 
 void test_str_to_int() {
-    int64_t failed = 0;
-    int64_t passing = 0;
+    int failed = 0;
+    int passing = 0;
     str_to_int_test_case("+10", 10, STR_TO_INT_OK, &failed, &passing);
     str_to_int_test_case("-10", -10, STR_TO_INT_OK, &failed, &passing);
     str_to_int_test_case("-10  ", 0, STR_TO_INT_ERR, &failed, &passing);
@@ -142,10 +138,10 @@ void test_str_to_int() {
     str_to_int_test_case("+ +1", 0, STR_TO_INT_ERR, &failed, &passing);
     str_to_int_test_case("++1", 0, STR_TO_INT_ERR, &failed, &passing);
     str_to_int_test_case("+-1", 0, STR_TO_INT_ERR, &failed, &passing);
-    str_to_int_test_case("9223372036854775807", INT64_MAX, STR_TO_INT_OK, &failed, &passing);
-    str_to_int_test_case("9223372036854775808", 0, STR_TO_INT_OVERFLOW, &failed, &passing);
-    str_to_int_test_case("-9223372036854775808", INT64_MIN, STR_TO_INT_OK, &failed, &passing);
-    str_to_int_test_case("-9223372036854775809", 0, STR_TO_INT_OVERFLOW, &failed, &passing);
-    printf("%lld tests are passing\n", passing);
-    printf("%lld tests are failing\n", failed);
+    str_to_int_test_case("2147483647", INT_MAX, STR_TO_INT_OK, &failed, &passing);
+    str_to_int_test_case("2147483648", 0, STR_TO_INT_OVERFLOW, &failed, &passing);
+    str_to_int_test_case("-2147483648", INT_MIN, STR_TO_INT_OK, &failed, &passing);
+    str_to_int_test_case("-2147483649", 0, STR_TO_INT_OVERFLOW, &failed, &passing);
+    printf("%d tests are passing\n", passing);
+    printf("%d tests are failing\n", failed);
 }

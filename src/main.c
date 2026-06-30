@@ -1,24 +1,27 @@
-#include "str.c"
 #include <stdio.h>
 
-enum : uint8_t { CELL_EMPTY = 0, CELL_X = 1, CELL_O = 2 };
+#include "str.c"
 
-enum : uint8_t { PLAYER_X = 1, PLAYER_O = 2 };
+enum { CELL_EMPTY = 0, CELL_X = 1, CELL_O = 2 };
 
-const uint8_t WINNING_CELL_SETS[8][3] = {
+enum { PLAYER_X = 1, PLAYER_O = 2 };
+
+#define WINNING_CELL_SETS_COUNT 8
+#define WINNING_CELL_SET_SIZE 3
+const int WINNING_CELL_SETS[WINNING_CELL_SETS_COUNT][WINNING_CELL_SET_SIZE] = {
     {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6},
 };
 
 typedef struct {
-    uint8_t current_player;
-    uint8_t board[9];
+    int current_player;
+    int board[9];
 } Game;
 
 Game game_new() { return (Game){.current_player = PLAYER_X}; }
 
 void game_start() { printf("Welcome to tik-tak-toe terminal game (c version)!\n"); }
 
-char cell_to_char(uint8_t cell) {
+char cell_to_char(int cell) {
     if (cell == CELL_X) {
         return 'x';
     } else {
@@ -26,12 +29,12 @@ char cell_to_char(uint8_t cell) {
     }
 }
 
-void board_print(uint8_t board[9]) {
+void board_print(int board[9]) {
     printf("\n");
-    for (uint8_t row = 0; row < 3; row++) {
-        for (uint8_t col = 0; col < 3; col++) {
-            uint8_t idx = col + 3 * row;
-            uint8_t cell = board[idx];
+    for (int row = 0; row < 3; row++) {
+        for (int col = 0; col < 3; col++) {
+            int idx = col + 3 * row;
+            int cell = board[idx];
             if (cell == CELL_EMPTY) {
                 printf("|%d", idx);
             } else {
@@ -49,8 +52,8 @@ void game_make_turn(Game *game) {
         char cell_str[255] = {};
         fgets(cell_str, sizeof(cell_str), stdin);
         char *cell_str_trimmed = str_trim(cell_str);
-        uint8_t err = 0;
-        int64_t cell = str_to_int(cell_str_trimmed, &err);
+        int err = 0;
+        int cell = str_to_int(cell_str_trimmed, &err);
         if (err) {
             if (err == STR_TO_INT_ERR) {
                 printf("Error while parsing cell index\n");
@@ -75,14 +78,12 @@ void game_make_turn(Game *game) {
     }
 }
 
-uint8_t game_is_won(Game *game) {
-    int sets_count = sizeof(WINNING_CELL_SETS) / sizeof(WINNING_CELL_SETS[0]);
-    int set_size = sizeof(WINNING_CELL_SETS[0]) / sizeof(WINNING_CELL_SETS[0][0]);
-    for (int set_idx = 0; set_idx < sets_count; set_idx++) {
+int game_is_won(Game *game) {
+    for (int set_idx = 0; set_idx < WINNING_CELL_SETS_COUNT; set_idx++) {
         int condition = 1;
-        for (int idx = 0; idx < set_size; idx++) {
+        for (int idx = 0; idx < WINNING_CELL_SET_SIZE; idx++) {
             int cell_idx = WINNING_CELL_SETS[set_idx][idx];
-            uint8_t cell = game->board[cell_idx];
+            int cell = game->board[cell_idx];
             if (cell != game->current_player) {
                 condition = 0;
                 break;
@@ -95,13 +96,13 @@ uint8_t game_is_won(Game *game) {
     return 0;
 }
 
-void game_won(uint8_t winner) { printf("Congratulations! Player %c won!\n", cell_to_char(winner)); }
+void game_won(int winner) { printf("Congratulations! Player %c won!\n", cell_to_char(winner)); }
 
 void game_draw() { printf("Draw!\n"); }
 
-uint8_t board_is_full(uint8_t board[9]) {
+int board_is_full(int board[9]) {
     for (int cell_idx = 0; cell_idx < 9; cell_idx++) {
-        uint8_t cell = board[cell_idx];
+        int cell = board[cell_idx];
         if (cell == CELL_EMPTY) {
             return 0;
         }
@@ -109,7 +110,7 @@ uint8_t board_is_full(uint8_t board[9]) {
     return 1;
 }
 
-uint8_t player_switch(uint8_t player) {
+int player_switch(int player) {
     if (player == PLAYER_X) {
         return PLAYER_O;
     } else {
