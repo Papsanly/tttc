@@ -84,6 +84,8 @@ int str_to_int(char *str, int *err) {
     return res;
 }
 
+#ifdef TEST
+
 void str_to_int_test_case(char *input, int expected_res, int expected_err, int *failed,
                           int *passing) {
     int err = 0;
@@ -145,3 +147,5 @@ void test_str_to_int() {
     printf("%d tests are passing\n", passing);
     printf("%d tests are failing\n", failed);
 }
+
+#endif
